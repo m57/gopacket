@@ -287,8 +287,11 @@ build_target() {
         fi
         local out_path="${outdir}/${out_name}${exe_suffix}"
         local build_cmd=(go build -o "$out_path")
-        if [ "$t" = "native" ]; then
+        if [ "$t" = "native" ] && [ "$(uname -s)" = "Linux" ]; then
             # Static-link libgcc so binaries run on minimally-versioned hosts.
+            # This is a GNU/GCC linker flag; Apple's clang (the native linker on
+            # macOS) rejects -static-libgcc, and there's no libgcc to link there
+            # anyway, so only do this on Linux.
             build_cmd+=(-ldflags '-linkmode external -extldflags "-static-libgcc"')
         fi
         build_cmd+=("./tools/${tool}")
